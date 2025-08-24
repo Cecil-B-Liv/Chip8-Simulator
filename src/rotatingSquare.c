@@ -31,22 +31,32 @@ void fps_counter() {
     }
 }
 
-void rotate(vec3* point, float x, float y, float z) {
-    if (x == 0) x = 1;  // manually set defaults
-    if (y == 0) y = 1;
-    if (z == 0) z = 1;
-    float rad = 0;
+void rotate(vec3* point, float rx, float ry, float rz) {
+    float x = point->x;
+    float y = point->y;
+    float z = point->z;
 
-    rad = x;
-    point->y = cos(rad) * point->y - sin(rad) * point->z;
-    point->z = sin(rad) * point->y + cos(rad) * point->z;
-    rad = y;
-    point->x = cos(rad) * point->x - sin(rad) * point->z;
-    point->z = sin(rad) * point->x + cos(rad) * point->z;
-    rad = z;
-    point->x = cos(rad) * point->x - sin(rad) * point->y;
-    point->y = sin(rad) * point->x + cos(rad) * point->y;
+    // Rotate around X-axis
+    float y1 = cos(rx) * y - sin(rx) * z;
+    float z1 = sin(rx) * y + cos(rx) * z;
+    y = y1;
+    z = z1;
 
+    // Rotate around Y-axis
+    float x1 = cos(ry) * x + sin(ry) * z;
+    float z2 = -sin(ry) * x + cos(ry) * z;
+    x = x1;
+    z = z2;
+
+    // Rotate around Z-axis
+    float x2 = cos(rz) * x - sin(rz) * y;
+    float y2 = sin(rz) * x + cos(rz) * y;
+    x = x2;
+    y = y2;
+
+    point->x = x;
+    point->y = y;
+    point->z = z;
 }
 
 void line(Screen* screen, float x1, float y1, float x2, float y2) {
@@ -54,9 +64,11 @@ void line(Screen* screen, float x1, float y1, float x2, float y2) {
     float dy = y2 - y1;
     float length = sqrt(dx * dx + dy * dy);
     float angle = atan2(dy, dx);
+    float ca = cos(angle);
+    float sa = sin(angle);
 
     for (float i = 0; i < length; i++) {
-        pixel_add(&screen->points, x1 + cos(angle) * i, y1 + sin(angle) * i);
+        pixel_add(&screen->points, x1 + ca * i, y1 + sa * i);
     }
 }
 
@@ -71,14 +83,14 @@ int main() {
         pixel_add(&screen.points, rand() % 640, rand() % 480);
     }
 
-    vec3 vecPoints[NUM_POINTS] = {{250, 250, 300},
-                                  {350, 250, 300},
-                                  {350, 350, 300},
-                                  {250, 350, 300},
-                                  {250, 250, 400},
-                                  {350, 250, 400},
-                                  {350, 350, 400},
-                                  {250, 350, 400}};
+    vec3 vecPoints[NUM_POINTS] = {{270, 190, 300},  // front face
+                                  {370, 190, 300},
+                                  {370, 290, 300},
+                                  {270, 290, 300},
+                                  {270, 190, 400},  // back face
+                                  {370, 190, 400},
+                                  {370, 290, 400},
+                                  {270, 290, 400}};
 
     connection connections[] = {
         {0, 4},
@@ -113,11 +125,12 @@ int main() {
             vecPoints[i].x -= centroid.x;
             vecPoints[i].y -= centroid.y;
             vecPoints[i].z -= centroid.z;
-            rotate(&vecPoints[i], 0.004, 0.002, 0.008);
+            rotate(&vecPoints[i], 0.003, 0.004, 0.005);
 
             vecPoints[i].x += centroid.x;
             vecPoints[i].y += centroid.y;
             vecPoints[i].z += centroid.z;
+            
             pixel_add(&screen.points, vecPoints[i].x, vecPoints[i].y);
         }
 
@@ -133,7 +146,7 @@ int main() {
         clear(&screen);
         input(&screen);
         fps_counter();
-        SDL_Delay(10);
+        SDL_Delay(1);
     }
     return 0;
 }
