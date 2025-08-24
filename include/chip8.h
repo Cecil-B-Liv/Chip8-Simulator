@@ -143,3 +143,32 @@ int romLoaderNoMaloc(Chip8* chip8, const char* filename) {
     printf("Load successfully.\n");
     return 1;
 };
+
+void debug_dump_memory(uint8_t *memory, int start, int length) {
+    for (int i = 0; i < length; i += 16) {
+        printf("%04X  ", start + i); // print memory address
+
+        // Hex part
+        for (int j = 0; j < 16 && i + j < length; j++) {
+            printf("%02X ", memory[start + i + j]);
+        }
+
+        // If fewer than 16 bytes, pad spacing
+        for (int j = length - i; j < 16; j++) {
+            printf("   ");
+        }
+
+        printf(" ");
+
+        // ASCII part
+        for (int j = 0; j < 16 && i + j < length; j++) {
+            uint8_t c = memory[start + i + j];
+            if (c >= 32 && c <= 126) // printable range
+                printf("%c", c);
+            else
+                printf(".");
+        }
+
+        printf("\n");
+    }
+}
