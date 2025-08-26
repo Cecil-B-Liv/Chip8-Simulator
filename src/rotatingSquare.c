@@ -73,8 +73,6 @@ void line(Screen* screen, float x1, float y1, float x2, float y2) {
 }
 
 int main() {
-    int counter_fps = 0;
-
     srand((unsigned)time(NULL));
     Screen screen;
     Screen_init(&screen);
@@ -130,11 +128,11 @@ int main() {
             vecPoints[i].x += centroid.x;
             vecPoints[i].y += centroid.y;
             vecPoints[i].z += centroid.z;
-            
+
             pixel_add(&screen.points, vecPoints[i].x, vecPoints[i].y);
         }
 
-        for (int i = 0; i < sizeof(connections) / sizeof(connections[0]); i++) {
+        for (long long unsigned int i = 0; i < sizeof(connections) / sizeof(connections[0]); i++) {
             line(&screen,
                  vecPoints[connections[i].a].x,
                  vecPoints[connections[i].a].y,

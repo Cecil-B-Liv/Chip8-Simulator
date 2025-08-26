@@ -1,15 +1,16 @@
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <screen.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
 #define SDL_MAIN_HANDLED
 #define TEXTURE_W 2000
 #define TEXTURE_H 2000
 #define SCREEN_W 1000
 #define SCREEN_H 1000
 #define NUM_POINTS 10000
-
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
 int main() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
