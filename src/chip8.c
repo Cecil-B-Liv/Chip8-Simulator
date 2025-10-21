@@ -1,18 +1,14 @@
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <chip8.h>
-#include <platform.h>
-#include <testRom.h>
+#include <header.h>
 
 #define CHIP8_HZ 500  // 500 Hz = 2 ms per cycle
 #define CYCLE_DELAY (1000 / CHIP8_HZ)
-const char* filename = "roms/4-flags.ch8";
+const char* filename = "roms/4-flags.ch8";  // rom to load
 
 int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
 
-    Platform platform;
+    Platform platform;  // init SDL Platform structure
     platform_init(&platform,
                   "CHIP-8 Emulator",
                   DISPLAY_WIDTH * 10,
@@ -20,25 +16,24 @@ int main(int argc, char** argv) {
                   DISPLAY_WIDTH,
                   DISPLAY_HEIGHT);
 
-    Chip8 chip8;
-    chip8_init(&chip8);
-    romLoaderNoMaloc(&chip8, filename);
+    Chip8 chip8;                         // init CHIP-8 structure
+    chip8_init(&chip8);                  // initialize CHIP-8 system
+    romLoaderNoMaloc(&chip8, filename);  // load rom into memory
 
     uint32_t lastCycleTime = SDL_GetTicks();  // milliseconds
     bool quit = false;
-    int videoPitch = sizeof(chip8.display[0]) * DISPLAY_WIDTH;
+    int videoPitch = sizeof(chip8.display[0]) * DISPLAY_WIDTH;  // pitch = width in bytes
 
     while (!quit) {
-        quit = platform_processInput(chip8.keypad);
+        quit = platform_processInput(chip8.keypad);  // process input
 
-        uint32_t currentTime = SDL_GetTicks();
-        uint32_t dt = currentTime - lastCycleTime;
+        uint32_t currentTime = SDL_GetTicks();      // milliseconds
+        uint32_t dt = currentTime - lastCycleTime;  // delta time since last cycle
 
-        if (dt > CYCLE_DELAY) {  // count to 2ms
+        if (dt > CYCLE_DELAY) {  // count to 2ms (500Hz)
             lastCycleTime = currentTime;
-            chip8Cycle(&chip8);
-
-            platform_update(&platform, chip8.display, videoPitch);
+            chip8Cycle(&chip8);                                     // execute one cycle
+            platform_update(&platform, chip8.display, videoPitch);  // update display
         }
     }
     return 0;
@@ -54,4 +49,3 @@ int main(int argc, char** argv) {
 // romLoaderTest(&chip8, testRomStage1, sizeof(testRomStage1));
 // debug_dump_memory(chip8.memory, 0x200, 32);
 // debug_dump_memory(chip8.memory, 0x200, getRomSize(filename));
-

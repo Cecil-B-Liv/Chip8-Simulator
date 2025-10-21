@@ -1,7 +1,4 @@
 #define SDL_MAIN_HANDLED
-
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
 #include <header.h>
 
 #define DISPLAY_WIDTH 64
@@ -10,7 +7,7 @@
 // -------------------------
 // Screen = "class" bundling SDL
 // -------------------------
-typedef struct {
+typedef struct {  // Platform structure
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Texture* texture;
@@ -25,14 +22,17 @@ bool platform_init(Platform* p,
                    int textureWidth,
                    int textureHeight) {
     SDL_Init(SDL_INIT_VIDEO);
+    // Init SDL and create window, renderer, texture with given sizes
 
     p->windowWidth = windowWidth;
     p->windowHeight = windowHeight;
     p->textureWidth = textureWidth;
     p->textureHeight = textureHeight;
 
-    p->window = SDL_CreateWindow(
-        title, windowWidth, windowHeight, SDL_WINDOW_RESIZABLE);  // orSDL_WINDOW_HIGH_PIXEL_DENSITY
+    p->window = SDL_CreateWindow(title,
+                                 windowWidth,
+                                 windowHeight,
+                                 SDL_WINDOW_RESIZABLE);  // or SDL_WINDOW_HIGH_PIXEL_DENSITY
 
     p->renderer = SDL_CreateRenderer(p->window, NULL);
     p->texture = SDL_CreateTexture(p->renderer,
@@ -50,7 +50,7 @@ void platform_update(Platform* p, const void* buffer, int pitch) {
     SDL_SetTextureScaleMode(p->texture, SDL_SCALEMODE_NEAREST);
     SDL_UpdateTexture(p->texture, NULL, buffer, pitch);
     SDL_RenderClear(p->renderer);
-    SDL_RenderTexture(p->renderer, p->texture, NULL, NULL);  // SDL3 uses RenderTexture
+    SDL_RenderTexture(p->renderer, p->texture, NULL, NULL);  
     SDL_RenderPresent(p->renderer);
 }
 
