@@ -17,6 +17,7 @@ void chip8_init(Chip8* chip8) {
     chip8->waiting_for_key = false;
     chip8->key_register = 0;
     chip8->pressed_key = 0xFF;  // No key pressed
+    chip8->is_beeping = false;
 
     static const uint8_t chip8_fontset[80] = {
         0xF0, 0x90, 0x90, 0x90, 0xF0,  // 0

@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
 
-    const char* filename = "roms/6-keypad.ch8";  // default ROM
+    const char* filename = "roms/7-beep.ch8";  // default ROM
 
     Platform platform;
     platform_init(&platform,
@@ -55,9 +55,20 @@ int main(int argc, char** argv) {
             if (chip8.delay_timer > 0) {
                 chip8.delay_timer--;
             }
+            // Handle sound timer with proper state tracking
             if (chip8.sound_timer > 0) {
+                // Start beeping if not already beeping
+                if (!chip8.is_beeping) {
+                    platform_start_beep(&platform);
+                    chip8.is_beeping = true;
+                }
                 chip8.sound_timer--;
-                // TODO: Play beep sound when sound_timer > 0
+            } else {
+                // Stop beeping when timer is 0
+                if (chip8.is_beeping) {
+                    platform_stop_beep(&platform);
+                    chip8.is_beeping = false;
+                }
             }
         }
     }

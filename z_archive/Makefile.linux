@@ -45,7 +45,7 @@ all: $(TARGET)
 # --- Link Object Files into Executable ---
 $(TARGET): $(OBJS)
 	@echo "Linking object files into $(TARGET)..."
-	gcc $(OBJS) -o $@ $(LDFLAGS)
+	gcc $(OBJS) -o $@ $(LDFLAGS) -lm
 	@echo "Build successful!"
 
 # --- Compile Source Files into Object Files ---

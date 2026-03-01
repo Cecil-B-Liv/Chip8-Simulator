@@ -27,6 +27,7 @@ typedef struct {
     bool waiting_for_key;                              // Are we waiting for a key?
     uint8_t key_register;                              // Which register to store key in
     uint8_t pressed_key;                               // Which key was pressed
+    bool is_beeping; 
 } Chip8;
 
 // Function declarations

@@ -15,6 +15,9 @@ typedef struct {
     SDL_Texture* texture;
     int windowWidth, windowHeight;
     int textureWidth, textureHeight;
+
+    SDL_AudioDeviceID audio_device;
+    bool audio_enabled;
 } Platform;
 
 // Function declarations
@@ -29,4 +32,7 @@ void platform_update(Platform* p, const void* buffer, int pitch);
 void platform_destroy(Platform* p);
 bool platform_processInput(uint8_t* keys);
 
-#endif // PLATFORM_H
+void platform_start_beep(Platform* p);
+void platform_stop_beep(Platform* p);
+
+#endif  // PLATFORM_H

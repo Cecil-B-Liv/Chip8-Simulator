@@ -54,7 +54,7 @@ all: $(TARGET) copy
 # The linker (gcc) links them together with SDL3 library
 $(TARGET): $(OBJS)
 	@echo "Linking object files into $(TARGET)..."
-	gcc $(OBJS) -o $@ $(LDFLAGS)
+	gcc $(OBJS) -o $@ $(LDFLAGS) -lm
 	@echo "Build successful!"
 
 # --- Compile Source Files into Object Files ---
