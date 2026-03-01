@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
 
-    const char* filename = "roms/7-beep.ch8";  // default ROM
+    const char* filename = "roms/RPS.ch8";  // default ROM
 
     Platform platform;
     platform_init(&platform,
