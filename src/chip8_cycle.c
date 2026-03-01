@@ -108,30 +108,50 @@ void chip8Cycle(Chip8* chip8) {       // Execute one cycle of CHIP-8
                 case 0x4:  // ADD Vx, Vy (with carry)
                     printf("ADD V%X, V%X\n", x, y);
                     {
+                        // Use temporary to avoid VF overwrite issues
                         uint16_t sum = chip8->V[x] + chip8->V[y];
-                        chip8->V[0xF] = (sum > 0xFF) ? 1 : 0;
+                        uint8_t carry = (sum > 0xFF) ? 1 : 0;
                         chip8->V[x] = sum & 0xFF;
+                        chip8->V[0xF] = carry;  // Set VF AFTER modifying Vx
                     }
                     break;
-                case 0x5:  // SUB Vx, Vy
+                case 0x5:  // SUB Vx, Vy (Vx = Vx - Vy)
                     printf("SUB V%X, V%X\n", x, y);
-                    chip8->V[0xF] = (chip8->V[x] >= chip8->V[y]) ? 1 : 0;
-                    chip8->V[x] -= chip8->V[y];
+                    {
+                        // Use temporaries and correct borrow logic (>= not >)
+                        uint8_t vx = chip8->V[x];
+                        uint8_t vy = chip8->V[y];
+                        chip8->V[x] = vx - vy;
+                        chip8->V[0xF] = (vx >= vy) ? 1 : 0;  // VF=1 means NO borrow
+                    }
                     break;
-                case 0x6:  // SHR Vx
+                case 0x6:  // SHR Vx (shift right)
                     printf("SHR V%X\n", x);
-                    chip8->V[0xF] = chip8->V[x] & 0x1;
-                    chip8->V[x] >>= 1;
+                    {
+                        // Use temporary to avoid VF overwrite
+                        uint8_t lsb = chip8->V[x] & 0x1;
+                        chip8->V[x] >>= 1;
+                        chip8->V[0xF] = lsb;  // Set VF AFTER modifying Vx
+                    }
                     break;
-                case 0x7:  // SUBN Vx, Vy
+                case 0x7:  // SUBN Vx, Vy (Vx = Vy - Vx)
                     printf("SUBN V%X, V%X\n", x, y);
-                    chip8->V[0xF] = (chip8->V[y] >= chip8->V[x]) ? 1 : 0;
-                    chip8->V[x] = chip8->V[y] - chip8->V[x];
+                    {
+                        // Use temporaries and correct borrow logic (>= not >)
+                        uint8_t vx = chip8->V[x];
+                        uint8_t vy = chip8->V[y];
+                        chip8->V[x] = vy - vx;
+                        chip8->V[0xF] = (vy >= vx) ? 1 : 0;  // VF=1 means NO borrow
+                    }
                     break;
-                case 0xE:  // SHL Vx
+                case 0xE:  // SHL Vx (shift left)
                     printf("SHL V%X\n", x);
-                    chip8->V[0xF] = (chip8->V[x] & 0x80) >> 7;
-                    chip8->V[x] <<= 1;
+                    {
+                        // Use temporary to avoid VF overwrite
+                        uint8_t msb = (chip8->V[x] & 0x80) >> 7;
+                        chip8->V[x] <<= 1;
+                        chip8->V[0xF] = msb;  // Set VF AFTER modifying Vx
+                    }
                     break;
                 default:
                     printf("Unknown 8XY_ opcode: %04X\n", opcode);
