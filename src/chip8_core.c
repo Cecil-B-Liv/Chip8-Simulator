@@ -14,6 +14,10 @@ void chip8_init(Chip8* chip8) {
            DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(chip8->display[0]));  // clear display
     memset(chip8->keypad, 0, KEYPAD_SIZE * sizeof(chip8->keypad[0]));    // clear keypad
 
+    chip8->waiting_for_key = false;
+    chip8->key_register = 0;
+    chip8->pressed_key = 0xFF;  // No key pressed
+
     static const uint8_t chip8_fontset[80] = {
         0xF0, 0x90, 0x90, 0x90, 0xF0,  // 0
         0x20, 0x60, 0x20, 0x20, 0x70,  // 1

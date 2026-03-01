@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
 
-    const char* filename = "roms/5-quirks.ch8";  // default ROM
+    const char* filename = "roms/6-keypad.ch8";  // default ROM
 
     Platform platform;
     platform_init(&platform,
@@ -41,11 +41,12 @@ int main(int argc, char** argv) {
         uint32_t dt = currentTime - lastCycleTime;
         if (dt > CYCLE_DELAY) {
             lastCycleTime = currentTime;
+
             chip8Cycle(&chip8);
             platform_update(&platform, chip8.display, videoPitch);
         }
 
-        // ADD: Timer decrementation (60Hz)
+        // Timer decrementation (60Hz)
         uint32_t timerDt = currentTime - lastTimerTime;
         if (timerDt > TIMER_DELAY) {
             lastTimerTime = currentTime;

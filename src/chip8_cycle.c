@@ -244,19 +244,38 @@ void chip8Cycle(Chip8* chip8) {       // Execute one cycle of CHIP-8
                     printf("LD V%X, DT\n", x);
                     chip8->V[x] = chip8->delay_timer;
                     break;
-                case 0x0A:  // LD Vx, K (wait for key press)
+                case 0x0A:  // LD Vx, K (wait for key press and release)
                     printf("LD V%X, K\n", x);
                     {
-                        bool keyPressed = false;
-                        for (int i = 0; i < 16; i++) {
-                            if (chip8->keypad[i]) {
-                                chip8->V[x] = i;
-                                keyPressed = true;
-                                break;
+                        if (!chip8->waiting_for_key) {
+                            // State 1: Start waiting, look for any key press
+                            bool keyFound = false;
+                            for (int i = 0; i < 16; i++) {
+                                if (chip8->keypad[i]) {
+                                    chip8->waiting_for_key = true;
+                                    chip8->key_register = x;
+                                    chip8->pressed_key = i;
+                                    keyFound = true;
+                                    break;
+                                }
                             }
-                        }
-                        if (!keyPressed) {
-                            chip8->pc -= 2;  // repeat this instruction
+                            if (!keyFound) {
+                                chip8->pc -= 2;  // No key pressed, repeat instruction
+                            } else {
+                                chip8->pc -= 2;  // Key pressed, but now wait for release
+                            }
+                        } else {
+                            // State 2: We found a key press, now wait for release
+                            if (!chip8->keypad[chip8->pressed_key]) {
+                                // Key was released!
+                                chip8->V[chip8->key_register] = chip8->pressed_key;
+                                chip8->waiting_for_key = false;
+                                chip8->pressed_key = 0xFF;
+                                // Don't subtract PC - continue to next instruction
+                            } else {
+                                // Key still pressed, keep waiting
+                                chip8->pc -= 2;
+                            }
                         }
                     }
                     break;
