@@ -175,7 +175,7 @@ void chip8Cycle(Chip8* chip8) {       // Execute one cycle of CHIP-8
                             uint8_t screenX = (xPos + col) % DISPLAY_WIDTH;
                             uint8_t screenY = (yPos + row) % DISPLAY_HEIGHT;
                             uint32_t* pixel = &chip8->display[screenY * DISPLAY_WIDTH + screenX];
-                            
+
                             if (*pixel == 0xFFFFFFFF) {
                                 chip8->V[0xF] = 1;
                             }
