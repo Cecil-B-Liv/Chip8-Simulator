@@ -64,47 +64,6 @@ long getRomSize(const char* filename) {  // get size of the rom file
     return size;
 }
 
-int romLoaderHasMaloc(Chip8* chip8, const char* filename) {  // use malloc to load rom
-    FILE* rom = fopen(filename, "rb");
-    if (!rom) {
-        perror("Failed to open ROM");
-        return -1;
-    }
-
-    fseek(rom, 0, SEEK_END);
-    size_t size = ftell(rom);
-    fseek(rom, 0, SEEK_SET);
-
-    // Make sure it fits into CHIP-8 memory (size + 0x200 <= 4096)
-    if (size > (4096 - 0x200)) {
-        fprintf(stderr, "ROM too large to fit in memory.\n");
-        fclose(rom);
-        return -1;
-    }
-
-    unsigned char* buffer = malloc(size);
-    if (!buffer) {
-        perror("Failed to allocate buffer");
-        fclose(rom);
-        return -1;
-    }
-
-    size_t bytesRead = fread(buffer, 1, size, rom);
-    if (bytesRead != size) {
-        perror("Failed to read ROM completely");
-        free(buffer);
-        fclose(rom);
-        return -1;
-    }
-
-    // Copy ROM into CHIP-8 memory starting at 0x200
-    memcpy(&chip8->memory[0x200], buffer, size);
-    free(buffer);
-    fclose(rom);
-    printf("Load successfully.\n");
-    return 1;
-}
-
 int romLoaderNoMaloc(Chip8* chip8, const char* filename) {  // no malloc version
     FILE* rom = fopen(filename, "rb");
     if (!rom) {
@@ -183,3 +142,44 @@ void dumpRegisters(Chip8* chip8) {  // for debugging: print the V registers to c
     }
     printf("=====================\n");
 }
+
+// int romLoaderHasMaloc(Chip8* chip8, const char* filename) {  // use malloc to load rom
+//     FILE* rom = fopen(filename, "rb");
+//     if (!rom) {
+//         perror("Failed to open ROM");
+//         return -1;
+//     }
+
+//     fseek(rom, 0, SEEK_END);
+//     size_t size = ftell(rom);
+//     fseek(rom, 0, SEEK_SET);
+
+//     // Make sure it fits into CHIP-8 memory (size + 0x200 <= 4096)
+//     if (size > (4096 - 0x200)) {
+//         fprintf(stderr, "ROM too large to fit in memory.\n");
+//         fclose(rom);
+//         return -1;
+//     }
+
+//     unsigned char* buffer = malloc(size);
+//     if (!buffer) {
+//         perror("Failed to allocate buffer");
+//         fclose(rom);
+//         return -1;
+//     }
+
+//     size_t bytesRead = fread(buffer, 1, size, rom);
+//     if (bytesRead != size) {
+//         perror("Failed to read ROM completely");
+//         free(buffer);
+//         fclose(rom);
+//         return -1;
+//     }
+
+//     // Copy ROM into CHIP-8 memory starting at 0x200
+//     memcpy(&chip8->memory[0x200], buffer, size);
+//     free(buffer);
+//     fclose(rom);
+//     printf("Load successfully.\n");
+//     return 1;
+// }

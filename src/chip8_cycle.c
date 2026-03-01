@@ -9,7 +9,7 @@ void chip8Cycle(Chip8* chip8) {       // Execute one cycle of CHIP-8
     // Fetch opcode (2 bytes)
     // Combine the two bytes into a single opcode
     uint16_t opcode = chip8->memory[chip8->pc] << 8 | chip8->memory[chip8->pc + 1];
-    printf("PC: %04X  OPCODE: %04X\n", chip8->pc, opcode);
+    // printf("PC: %04X  OPCODE: %04X\n", chip8->pc, opcode);
     chip8->pc += 2;  // Default PC advance
 
     // get the useful fields (nnn, kk, n, x, y)
@@ -96,14 +96,17 @@ void chip8Cycle(Chip8* chip8) {       // Execute one cycle of CHIP-8
                 case 0x1:  // OR Vx, Vy
                     printf("OR V%X, V%X\n", x, y);
                     chip8->V[x] |= chip8->V[y];
+                    chip8->V[0xF] = 0;
                     break;
                 case 0x2:  // AND Vx, Vy
                     printf("AND V%X, V%X\n", x, y);
                     chip8->V[x] &= chip8->V[y];
+                    chip8->V[0xF] = 0;
                     break;
                 case 0x3:  // XOR Vx, Vy
                     printf("XOR V%X, V%X\n", x, y);
                     chip8->V[x] ^= chip8->V[y];
+                    chip8->V[0xF] = 0;
                     break;
                 case 0x4:  // ADD Vx, Vy (with carry)
                     printf("ADD V%X, V%X\n", x, y);
@@ -130,7 +133,7 @@ void chip8Cycle(Chip8* chip8) {       // Execute one cycle of CHIP-8
                     {
                         // Use temporary to avoid VF overwrite
                         uint8_t lsb = chip8->V[x] & 0x1;
-                        chip8->V[x] >>= 1;
+                        chip8->V[x] = chip8->V[y] >> 1;
                         chip8->V[0xF] = lsb;  // Set VF AFTER modifying Vx
                     }
                     break;
@@ -147,10 +150,9 @@ void chip8Cycle(Chip8* chip8) {       // Execute one cycle of CHIP-8
                 case 0xE:  // SHL Vx (shift left)
                     printf("SHL V%X\n", x);
                     {
-                        // Use temporary to avoid VF overwrite
-                        uint8_t msb = (chip8->V[x] & 0x80) >> 7;
-                        chip8->V[x] <<= 1;
-                        chip8->V[0xF] = msb;  // Set VF AFTER modifying Vx
+                        uint8_t msb = (chip8->V[y] & 0x80) >> 7;  // Use Vy as source
+                        chip8->V[x] = chip8->V[y] << 1;           // Store shifted Vy into Vx
+                        chip8->V[0xF] = msb;
                     }
                     break;
                 default:
@@ -184,22 +186,32 @@ void chip8Cycle(Chip8* chip8) {       // Execute one cycle of CHIP-8
         case 0xD000:  // DRW Vx, Vy, n (draw sprite)
             printf("DRW V%X, V%X, %X\n", x, y, n);
             {
+                // Step 1: Wrap coordinates to valid screen positions
                 uint8_t xPos = chip8->V[x] % DISPLAY_WIDTH;
                 uint8_t yPos = chip8->V[y] % DISPLAY_HEIGHT;
                 chip8->V[0xF] = 0;
 
+                // Step 2: Draw sprite with clipping (don't wrap individual pixels)
                 for (uint8_t row = 0; row < n; row++) {
-                    uint8_t spriteByte = chip8->memory[chip8->index + row];
-                    for (uint8_t col = 0; col < 8; col++) {
-                        if (spriteByte & (0x80 >> col)) {
-                            uint8_t screenX = (xPos + col) % DISPLAY_WIDTH;
-                            uint8_t screenY = (yPos + row) % DISPLAY_HEIGHT;
-                            uint32_t* pixel = &chip8->display[screenY * DISPLAY_WIDTH + screenX];
+                    // Clip at bottom edge
+                    if ((yPos + row) >= DISPLAY_HEIGHT) break;
 
-                            if (*pixel == 0xFFFFFFFF) {
+                    uint8_t spriteByte = chip8->memory[chip8->index + row];
+
+                    for (uint8_t col = 0; col < 8; col++) {
+                        // Clip at right edge
+                        if ((xPos + col) >= DISPLAY_WIDTH) break;
+
+                        if (spriteByte & (0x80 >> col)) {
+                            uint32_t pixelIndex = (yPos + row) * DISPLAY_WIDTH + (xPos + col);
+
+                            // Check collision before XOR
+                            if (chip8->display[pixelIndex] != 0) {
                                 chip8->V[0xF] = 1;
                             }
-                            *pixel ^= 0xFFFFFFFF;
+
+                            // XOR the pixel
+                            chip8->display[pixelIndex] ^= 0xFFFFFFFF;
                         }
                     }
                 }
@@ -275,12 +287,16 @@ void chip8Cycle(Chip8* chip8) {       // Execute one cycle of CHIP-8
                     for (int i = 0; i <= x; i++) {
                         chip8->memory[chip8->index + i] = chip8->V[i];
                     }
+                    // CHIP-8 quirk: increment I
+                    chip8->index += x + 1;
                     break;
                 case 0x65:  // LD Vx, [I] (load V0-Vx)
                     printf("LD V%X, [I]\n", x);
                     for (int i = 0; i <= x; i++) {
                         chip8->V[i] = chip8->memory[chip8->index + i];
                     }
+                    // CHIP-8 quirk: increment I
+                    chip8->index += x + 1;
                     break;
                 default:
                     printf("Unknown FX__ opcode: %04X\n", opcode);

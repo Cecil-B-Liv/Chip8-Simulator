@@ -13,10 +13,7 @@ bool platform_init(Platform* p,
     p->textureWidth = textureWidth;
     p->textureHeight = textureHeight;
 
-    p->window = SDL_CreateWindow(title,
-                                 windowWidth,
-                                 windowHeight,
-                                 SDL_WINDOW_RESIZABLE);
+    p->window = SDL_CreateWindow(title, windowWidth, windowHeight, SDL_WINDOW_RESIZABLE);
 
     p->renderer = SDL_CreateRenderer(p->window, NULL);
     p->texture = SDL_CreateTexture(p->renderer,
@@ -33,7 +30,7 @@ void platform_update(Platform* p, const void* buffer, int pitch) {
     SDL_SetTextureScaleMode(p->texture, SDL_SCALEMODE_NEAREST);
     SDL_UpdateTexture(p->texture, NULL, buffer, pitch);
     SDL_RenderClear(p->renderer);
-    SDL_RenderTexture(p->renderer, p->texture, NULL, NULL);  
+    SDL_RenderTexture(p->renderer, p->texture, NULL, NULL);
     SDL_RenderPresent(p->renderer);
 }
 
@@ -60,9 +57,14 @@ bool platform_processInput(uint8_t* keys) {
                     case SDLK_ESCAPE:
                         quit = true;
                         break;
-                    case SDLK_X:
-                        keys[0x0] = isDown;
-                        break;
+
+                    // CHIP-8 Keypad Layout (Standard):
+                    // 1 2 3 C
+                    // 4 5 6 D
+                    // 7 8 9 E
+                    // A 0 B F
+
+                    // Top row: 1 2 3 C
                     case SDLK_1:
                         keys[0x1] = isDown;
                         break;
@@ -72,6 +74,11 @@ bool platform_processInput(uint8_t* keys) {
                     case SDLK_3:
                         keys[0x3] = isDown;
                         break;
+                    case SDLK_4:
+                        keys[0xC] = isDown;
+                        break;
+
+                    // Second row: 4 5 6 D
                     case SDLK_Q:
                         keys[0x4] = isDown;
                         break;
@@ -81,6 +88,11 @@ bool platform_processInput(uint8_t* keys) {
                     case SDLK_E:
                         keys[0x6] = isDown;
                         break;
+                    case SDLK_R:
+                        keys[0xD] = isDown;
+                        break;
+
+                    // Third row: 7 8 9 E
                     case SDLK_A:
                         keys[0x7] = isDown;
                         break;
@@ -90,24 +102,24 @@ bool platform_processInput(uint8_t* keys) {
                     case SDLK_D:
                         keys[0x9] = isDown;
                         break;
+                    case SDLK_F:
+                        keys[0xE] = isDown;
+                        break;
+
+                    // Bottom row: A 0 B F
                     case SDLK_Z:
                         keys[0xA] = isDown;
+                        break;
+                    case SDLK_X:
+                        keys[0x0] = isDown;  // This is correct
                         break;
                     case SDLK_C:
                         keys[0xB] = isDown;
                         break;
-                    case SDLK_4:
-                        keys[0xC] = isDown;
-                        break;
-                    case SDLK_R:
-                        keys[0xD] = isDown;
-                        break;
-                    case SDLK_F:
-                        keys[0xE] = isDown;
-                        break;
                     case SDLK_V:
                         keys[0xF] = isDown;
                         break;
+
                     default:
                         break;
                 }
